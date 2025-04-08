@@ -3,11 +3,13 @@ import org.antlr.v4.runtime.tree.*;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.*;
 
 import Tuga.*;
 
-public class CompileAndRunTuga {
+public class TugaCompileAndRun {
+
+
+
     public static void main(String[] args) throws Exception
     {
         boolean showLexerErrors = true;
@@ -53,13 +55,6 @@ public class CompileAndRunTuga {
                 System.out.println("Input has parsing errors");
                 return;
             }
-            /*
-            if (errorListener.getNumTypeCheckingErrors() > 0)
-            {
-                System.out.println("Input has type checking errors");
-                return;
-            }
-            */
 
             // evalvisitor evalvisitor = new evalvisitor();
             // int result = evalvisitor.visit(tree);
