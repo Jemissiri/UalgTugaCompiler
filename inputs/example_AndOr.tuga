@@ -1,0 +1,5 @@
+escreve verdadeiro e falso;
+escreve verdadeiro ou falso;
+escreve verdadeiro e 727;
+escreve verdadeiro ou 727;
+escreve verdadeiro e (verdadeiro e falso);

@@ -1,0 +1,6 @@
+escreve "ola" igual "adeus";
+escreve "ola" diferente "adeus";
+escreve "wysi" igual 727;
+escreve 7.27 igual 727;
+escreve verdadeiro igual 727;
+escreve verdadeiro igual falso;

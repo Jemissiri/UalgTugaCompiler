@@ -1,3 +1,6 @@
+import MyErrorListeners.MyErrorListener;
+import SemanticErrorChecker.SemanticErrorChecker;
+import Types.TugaTypes;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 
@@ -14,7 +17,7 @@ public class TugaCompileAndRun {
     {
         boolean showLexerErrors = true;
         boolean showParserErrors = true;
-        boolean showTypeCheckingErrors = false;
+        boolean showSemanticErrors = true;
 
         String inputFile = null;
         if ( args.length>0 ) inputFile = args[0];
@@ -24,17 +27,8 @@ public class TugaCompileAndRun {
             if (inputFile != null)
                 is = new FileInputStream(inputFile);
             CharStream input = CharStreams.fromStream(is);
-            /*
-            LExprLexer lexer = new LExprLexer(input);
-            CommonTokenStream tokens = new CommonTokenStream(lexer);
-            LExprParser parser = new LExprParser(tokens);
-            ParseTree tree = parser.s();
-             */
 
-            //
-            // add my own error listener
-            //
-            MyErrorListener errorListener = new MyErrorListener(showLexerErrors, showParserErrors);
+            MyErrorListener errorListener = new MyErrorListener(showLexerErrors, showParserErrors, showSemanticErrors);
             TugaLexer lexer = new TugaLexer(input);
             lexer.removeErrorListeners();
             lexer.addErrorListener( errorListener );
@@ -45,6 +39,12 @@ public class TugaCompileAndRun {
             parser.addErrorListener( errorListener );
             ParseTree tree = parser.tuga();
 
+            ParseTreeProperty<TugaTypes> types = new ParseTreeProperty<TugaTypes>();
+            SemanticErrorChecker semanticErrorChecker = new SemanticErrorChecker(types);
+            semanticErrorChecker.removeErrorListener();
+            semanticErrorChecker.addErrorListener(errorListener);
+            semanticErrorChecker.visit(tree);
+
             if (errorListener.getNumLexerErrors() > 0)
             {
                 System.out.println("Input has lexical errors");
@@ -53,6 +53,11 @@ public class TugaCompileAndRun {
             if (errorListener.getNumParsingErrors() > 0)
             {
                 System.out.println("Input has parsing errors");
+                return;
+            }
+            if (errorListener.getNumSemanticErrors() > 0)
+            {
+                System.out.println("Input has semantic errors");
                 return;
             }
 

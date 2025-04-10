@@ -41,49 +41,25 @@ public class TugaBaseListener implements TugaListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterUnaryOp(TugaParser.UnaryOpContext ctx) { }
+	@Override public void enterEqualsOp(TugaParser.EqualsOpContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitUnaryOp(TugaParser.UnaryOpContext ctx) { }
+	@Override public void exitEqualsOp(TugaParser.EqualsOpContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterLiteralExpr(TugaParser.LiteralExprContext ctx) { }
+	@Override public void enterOrOp(TugaParser.OrOpContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitLiteralExpr(TugaParser.LiteralExprContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterParenExpr(TugaParser.ParenExprContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitParenExpr(TugaParser.ParenExprContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterBinaryOp(TugaParser.BinaryOpContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitBinaryOp(TugaParser.BinaryOpContext ctx) { }
+	@Override public void exitOrOp(TugaParser.OrOpContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -113,25 +89,13 @@ public class TugaBaseListener implements TugaListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterMultDivOp(TugaParser.MultDivOpContext ctx) { }
+	@Override public void enterTrue(TugaParser.TrueContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitMultDivOp(TugaParser.MultDivOpContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterSumSubOp(TugaParser.SumSubOpContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitSumSubOp(TugaParser.SumSubOpContext ctx) { }
+	@Override public void exitTrue(TugaParser.TrueContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -149,49 +113,25 @@ public class TugaBaseListener implements TugaListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterEqualsOp(TugaParser.EqualsOpContext ctx) { }
+	@Override public void enterString(TugaParser.StringContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitEqualsOp(TugaParser.EqualsOpContext ctx) { }
+	@Override public void exitString(TugaParser.StringContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAndOp(TugaParser.AndOpContext ctx) { }
+	@Override public void enterFalse(TugaParser.FalseContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitAndOp(TugaParser.AndOpContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterOrOp(TugaParser.OrOpContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitOrOp(TugaParser.OrOpContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterInt(TugaParser.IntContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitInt(TugaParser.IntContext ctx) { }
+	@Override public void exitFalse(TugaParser.FalseContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -209,37 +149,61 @@ public class TugaBaseListener implements TugaListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterString(TugaParser.StringContext ctx) { }
+	@Override public void enterInt(TugaParser.IntContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitString(TugaParser.StringContext ctx) { }
+	@Override public void exitInt(TugaParser.IntContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterTrue(TugaParser.TrueContext ctx) { }
+	@Override public void enterSumSubOp(TugaParser.SumSubOpContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitTrue(TugaParser.TrueContext ctx) { }
+	@Override public void exitSumSubOp(TugaParser.SumSubOpContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFalse(TugaParser.FalseContext ctx) { }
+	@Override public void enterParenExpr(TugaParser.ParenExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitFalse(TugaParser.FalseContext ctx) { }
+	@Override public void exitParenExpr(TugaParser.ParenExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterMultDivModOp(TugaParser.MultDivModOpContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitMultDivModOp(TugaParser.MultDivModOpContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAndOp(TugaParser.AndOpContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAndOp(TugaParser.AndOpContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

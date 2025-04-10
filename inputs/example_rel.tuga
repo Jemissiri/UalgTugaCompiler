@@ -1,0 +1,6 @@
+escreve 1 < 3;
+escreve 2.727 <= 3;
+escreve 1 > 3;
+escreve 1 >= 3;
+escreve 1 < verdadeiro;
+escreve "ola" < 1;

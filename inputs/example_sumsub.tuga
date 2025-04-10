@@ -1,0 +1,8 @@
+escreve 1 + 1;
+escreve 1 + "ola";
+escreve 1.1 + "ola";
+escreve "ola" + " adeus";
+escreve verdadeiro + 1;
+escreve verdadeiro + "adeus";
+escreve 1 - 1;
+escreve "ola" - " adeus";

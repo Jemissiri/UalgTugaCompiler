@@ -2,29 +2,23 @@ grammar Tuga;
 
 tuga : inst+ EOF;
 
-// instrucoes
+// instructions
 inst : 'escreve' expr END_INST;
 
-// expressoes
+// expressions
 expr : LPAREN expr RPAREN							# ParenExpr
-  | unary_op expr 									# UnaryOp
-  | expr binary_op expr	 							# BinaryOp
-  | literal											# LiteralExpr
-  ;
-
-unary_op : op=SUB									# NegateOp
-  | op=NOT											# LogicNegateOp
-  ;
-
-binary_op : op=(MULT|DIV|MOD)						# MultDivOp
-  | op=(SUM|SUB)									# SumSubOp
-  | op=(LESS|GREATER|LESS_EQ|GREATER_EQ)			# RelOp
-  | op=(EQUALS|N_EQUALS)							# EqualsOp
-  | op=AND											# AndOp
-  | op=OR											# OrOp
-  ;
-
-literal : INT								        # Int
+  // unary operators
+  | SUB expr 									    # NegateOp
+  | NOT expr 									    # LogicNegateOp
+  // binary operators
+  | expr op=(MULT|DIV|MOD) expr	 					# MultDivModOp
+  | expr op=(SUM|SUB) expr	 						# SumSubOp
+  | expr op=(LESS|GREATER|LESS_EQ|GREATER_EQ) expr	# RelOp
+  | expr op=(EQUALS|N_EQUALS) expr	 				# EqualsOp
+  | expr AND expr       	 						# AndOp
+  | expr OR expr                                    # OrOp
+  // literals
+  | INT								                # Int
   | DOUBLE											# Double
   | STRING											# String
   | TRUE											# True
@@ -50,7 +44,7 @@ AND:		'e' ;
 OR:			'ou' ;
 END_INST:	';' ;
 
-// types or constants (literais)
+// types or constants (literals)
 INT : [0-9]+ ;
 DOUBLE: [0-9]+ '.' [0-9]+ ;
 STRING: '"' ALL_CHARS+ '"' ;
