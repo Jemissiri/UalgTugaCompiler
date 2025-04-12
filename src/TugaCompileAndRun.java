@@ -57,7 +57,7 @@ public class TugaCompileAndRun {
             }
             if (errorListener.getNumSemanticErrors() > 0)
             {
-                System.out.println("Input has semantic errors");
+                System.out.println("Input has type checking errors");
                 return;
             }
 

@@ -11,6 +11,11 @@ public class TugaValues
         this.value = value;
     }
 
+    public TugaTypes getType()
+    {
+        return this.type;
+    }
+
     public Integer getIntValue()
     {
         if (this.type != TugaTypes.INT)
