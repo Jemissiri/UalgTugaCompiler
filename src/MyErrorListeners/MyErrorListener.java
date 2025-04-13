@@ -8,7 +8,7 @@ public class MyErrorListener extends BaseErrorListener {
     private boolean showSemanticErrors;
     private int numLexerErrors;
     private int numParsingErrors;
-    private int numSemanticErrors;
+    private int getNumTypeCheckingErrors;
 
     public enum ErrorTypes
     {
@@ -25,7 +25,7 @@ public class MyErrorListener extends BaseErrorListener {
         this.showSemanticErrors = showSemanticErrors;
         this.numLexerErrors = 0;
         this.numParsingErrors = 0;
-        this.numSemanticErrors = 0;
+        this.getNumTypeCheckingErrors = 0;
     }
 
     @Override
@@ -65,7 +65,7 @@ public class MyErrorListener extends BaseErrorListener {
                     System.err.printf("line %d:%d \nerror: %s\n\n", line, charPositionInLine, msg);
                 break;
             case ErrorTypes.SEMANTIC:
-                this.numSemanticErrors++;
+                this.getNumTypeCheckingErrors++;
                 if (this.showSemanticErrors)
                     System.err.printf("line %d:%d \nerror: %s\n\n", line, charPositionInLine, msg);
                 break;
@@ -78,6 +78,6 @@ public class MyErrorListener extends BaseErrorListener {
 
     public int getNumParsingErrors() { return this.numParsingErrors; }
 
-    public int getNumSemanticErrors() { return this.numSemanticErrors; }
+    public int getNumTypeCheckingErrors() { return this.getNumTypeCheckingErrors; }
 }
 

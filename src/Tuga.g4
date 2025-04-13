@@ -3,7 +3,8 @@ grammar Tuga;
 tuga : inst+ EOF;
 
 // instructions
-inst : 'escreve' expr END_INST;
+inst : 'escreve' expr END_INST                      #instPrint
+  ;
 
 // expressions
 expr : LPAREN expr RPAREN							# ParenExpr
@@ -18,7 +19,10 @@ expr : LPAREN expr RPAREN							# ParenExpr
   | expr AND expr       	 						# AndOp
   | expr OR expr                                    # OrOp
   // literals
-  | INT								                # Int
+  | literal											# LiteralExpr
+  ;
+
+literal : INT										# Int
   | DOUBLE											# Double
   | STRING											# String
   | TRUE											# True
@@ -47,7 +51,7 @@ END_INST:	';' ;
 // types or constants (literals)
 INT : [0-9]+ ;
 DOUBLE: [0-9]+ '.' [0-9]+ ;
-STRING: '"' ALL_CHARS+ '"' ;
+STRING: '"' ~["]* '"' ; // ~["] significa qualquer caracter exceto '"', e '*' é 0 ou mais repeticoes
 TRUE : 'verdadeiro' ;
 FALSE : 'falso' ;
 
@@ -55,5 +59,5 @@ WS : [ \t\r\n]+ -> skip ;
 SL_COMMENT : '//' .*? (EOF|'\n') -> skip ;  // single-line comment
 ML_COMMENT : '/*' .*? '*/' -> skip ;        // multi-line comment
 
-fragment
-ALL_CHARS : [ a-zA-Z=] ;
+// fragment
+// ALL_CHARS : [ a-zA-Z=] ;

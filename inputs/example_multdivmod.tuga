@@ -1,6 +1,0 @@
-escreve 1 * 3;
-escreve "ola" * 3;
-escreve 1 * "ola";
-escreve 1 / 2;
-escreve 1.1 / 2;
-escreve "ola" / 2;

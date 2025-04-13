@@ -2,70 +2,33 @@ package VM;
 
 import Types.TugaTypes;
 import Types.TugaValues;
-import VM.Instructions.*;
 
+import Bytecode.*;
 import java.util.*;
-import java.io.*;
 
-public class vm
+public class VirtualMachine
 {
     private boolean trace;       // trace flag
     private boolean halt;
     private final byte[] bytecodes;    // the bytecodes, storing just for displaying them. Not really needed
+    private final TugaValues[] constantPool;
     private Instruction[] code;        // instructions (converted from the bytecodes)
-    private int ip;                    // instruction pointer
     private final Stack<TugaValues> stack;    // runtime stack
-    private final ArrayList<TugaValues> constantPool;
+    private int ip;                    // instruction pointer
 
-    public vm( byte [] bytecodes, boolean trace ) {
+
+    public VirtualMachine(byte [] bytecodes, boolean trace ) {
         this.trace = trace;
         this.halt = false;
         this.bytecodes = bytecodes;
-        decode(bytecodes);  // this.code = decode(bytecodes)
-        this.ip = 0;
+        EnconderDecoder en = new EnconderDecoder(bytecodes);
+        this.constantPool = en.getConstantPool();
+        this.code = en.getInstructions();
         this.stack = new Stack<TugaValues>();
-        this.constantPool = new ArrayList<TugaValues>();
+        this.ip = 0;
     }
 
-    // decode the bytecodes into instructions and store them in this.code
-    private void decode(byte [] bytecodes) {
-        ArrayList<Instruction> inst = new ArrayList<>();
-        try {
-            // feed the bytecodes into a data input stream
-            DataInputStream din = new DataInputStream(new ByteArrayInputStream(bytecodes));
-            // convert them into intructions
-            while (true) {
-                byte b = din.readByte();
-                OpCode opc = OpCode.convert(b);
-                switch (opc.nArgs()) {
-                    case 0:
-                        inst.add(new Instruction(opc));
-                        break;
-                    case 1:
-                        int val = din.readInt();
-                        inst.add(new Instruction1Arg(opc, val));
-                        break;
-                    default:
-                        System.out.println("This should never happen! In file vm.java, method decode(...)");
-                        System.exit(1);
-                }
-            }
-        }
-        catch (java.io.EOFException e) {
-            // System.out.println("reached end of input stream");
-            // reached end of input stream, convert arraylist to array
-            this.code = new Instruction[ inst.size() ];
-            inst.toArray(this.code);
-            if (trace) {
-                //dumpInstructions();
-                dumpInstructionsAndBytecodes();
-            }
-        }
-        catch (java.io.IOException e) {
-            System.out.println(e);
-        }
-    }
-
+    /*
     // dump the instructions, along with the corresponding bytecodes
     public void dumpInstructionsAndBytecodes() {
         System.out.println("Disassembled instructions");
@@ -79,12 +42,19 @@ public class vm
             System.out.println( String.format("%5s: %-15s // %s", i, code[i], s) );
         }
     }
+     */
 
     // dump the instructions to the screen
-    public void dumpInstructions() {
-        System.out.println("Disassembled instructions");
+    public void dumpInstructions()
+    {
         for (int i=0; i< code.length; i++)
             System.out.println( i + ": " + code[i] );
+    }
+
+    public void dumpConstantPool()
+    {
+        for (int i = 0; i < constantPool.length; i++)
+            System.out.println(i + ": " + constantPool[i]);
     }
 
     public void run()
@@ -95,7 +65,7 @@ public class vm
             System.out.println("Execution starts at instrution " + ip);
         }
 
-        //halt = false;
+        halt = false;
         while (ip < code.length && !halt)
             exec_inst(code[ip++]);
 
@@ -131,14 +101,14 @@ public class vm
 
     private void exec_dconst(int arg)
     {
-        TugaValues value = constantPool.get(arg);
+        TugaValues value = constantPool[arg];
         checkType(value, TugaTypes.DOUBLE);
         stack.push(value);
     }
 
     private void exec_sconst(int arg)
     {
-        TugaValues value = constantPool.get(arg);
+        TugaValues value = constantPool[arg];
         checkType(value, TugaTypes.STRING);
         stack.push(value);
     }
@@ -359,9 +329,9 @@ public class vm
     {
         TugaValues right = stack.pop();
         TugaValues left = stack.pop();
-        checkType(right, TugaTypes.INT);
-        checkType(left, TugaTypes.INT);
-        TugaValues result = new TugaValues(TugaTypes.BOOLEAN, left.getIntValue() <= right.getIntValue());
+        checkType(right, TugaTypes.DOUBLE);
+        checkType(left, TugaTypes.DOUBLE);
+        TugaValues result = new TugaValues(TugaTypes.BOOLEAN, left.getDoubleValue() <= right.getDoubleValue());
         stack.push(result);
     }
 
@@ -384,8 +354,8 @@ public class vm
     {
         TugaValues right = stack.pop();
         TugaValues left = stack.pop();
-        checkType(right, TugaTypes.INT);
-        checkType(left, TugaTypes.INT);
+        checkType(right, TugaTypes.STRING);
+        checkType(left, TugaTypes.STRING);
         TugaValues result = new TugaValues(TugaTypes.STRING, left.getStringValue().concat(right.getStringValue()));
         stack.push(result);
     }
@@ -404,9 +374,9 @@ public class vm
     {
         TugaValues right = stack.pop();
         TugaValues left = stack.pop();
-        checkType(right, TugaTypes.DOUBLE);
-        checkType(left, TugaTypes.DOUBLE);
-        TugaValues result = new TugaValues(TugaTypes.BOOLEAN, !(left.getStringValue().equals(right.getStringValue())));
+        checkType(right, TugaTypes.STRING);
+        checkType(left, TugaTypes.STRING);
+        TugaValues result = new TugaValues(TugaTypes.BOOLEAN, !left.getStringValue().equals(right.getStringValue()));
         stack.push(result);
     }
 
@@ -504,15 +474,15 @@ public class vm
         switch (opc)
         {
             case iconst:
-                v = ((Instruction1Arg) inst).getArg();
+                v = inst.args()[0];
                 exec_iconst(v);
                 break;
             case dconst:
-                v = ((Instruction1Arg) inst).getArg();
+                v = inst.args()[0];
                 exec_dconst(v);
                 break;
             case sconst:
-                v = ((Instruction1Arg) inst).getArg();
+                v = inst.args()[0];
                 exec_sconst(v);
                 break;
             case iprint:

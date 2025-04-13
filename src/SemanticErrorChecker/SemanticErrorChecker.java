@@ -14,19 +14,25 @@ public class SemanticErrorChecker extends TugaBaseVisitor<TugaTypes>
 {
     private ParseTreeProperty<TugaTypes> types;
     private ArrayList<MyErrorListener> listeners;
-    private Set<ParserRuleContext> reportedErrors;
 
     public SemanticErrorChecker(ParseTreeProperty<TugaTypes> types)
     {
         this.types = types;
         this.listeners = new ArrayList<MyErrorListener>();
-        this.reportedErrors = new HashSet<>();
     }
 
     @Override
     public TugaTypes visitParenExpr(TugaParser.ParenExprContext ctx)
     {
         TugaTypes result = visit(ctx.expr());
+        types.put(ctx, result);
+        return result;
+    }
+
+    @Override
+    public TugaTypes visitLiteralExpr(TugaParser.LiteralExprContext ctx)
+    {
+        TugaTypes result = visit(ctx.literal());
         types.put(ctx, result);
         return result;
     }
@@ -42,7 +48,8 @@ public class SemanticErrorChecker extends TugaBaseVisitor<TugaTypes>
             return type;
         }
 
-        return error(ctx);
+        error(ctx);
+        return TugaTypes.ERROR;
     }
 
     @Override
@@ -56,7 +63,8 @@ public class SemanticErrorChecker extends TugaBaseVisitor<TugaTypes>
             return type;
         }
 
-        return error(ctx);
+        error(ctx);
+        return TugaTypes.ERROR;
     }
 
     @Override
@@ -65,14 +73,11 @@ public class SemanticErrorChecker extends TugaBaseVisitor<TugaTypes>
         TugaTypes left = visit(ctx.expr(0));
         TugaTypes right = visit(ctx.expr(1));
 
-        if (left == TugaTypes.ERROR || right == TugaTypes.ERROR)
+        if (!left.isNumeric() || !right.isNumeric())
         {
-            types.put(ctx, TugaTypes.ERROR);
+            error(ctx);
             return TugaTypes.ERROR;
         }
-
-        if (!left.isNumeric() || !right.isNumeric())
-            return error(ctx);
 
         if (left == TugaTypes.INT && right == TugaTypes.INT)
         {
@@ -81,7 +86,10 @@ public class SemanticErrorChecker extends TugaBaseVisitor<TugaTypes>
         }
 
         if (ctx.op.getType() == TugaParser.MOD)
-            return error(ctx);
+        {
+            error(ctx);
+            return TugaTypes.ERROR;
+        }
 
         types.put(ctx, TugaTypes.DOUBLE);
         return TugaTypes.DOUBLE;
@@ -93,12 +101,6 @@ public class SemanticErrorChecker extends TugaBaseVisitor<TugaTypes>
         TugaTypes left = visit(ctx.expr(0));
         TugaTypes right = visit(ctx.expr(1));
 
-        if (left == TugaTypes.ERROR || right == TugaTypes.ERROR)
-        {
-            types.put(ctx, TugaTypes.ERROR);
-            return TugaTypes.ERROR;
-        }
-
         if (ctx.op.getType() == TugaParser.SUM && (left == TugaTypes.STRING || right == TugaTypes.STRING))
         {
             types.put(ctx, TugaTypes.STRING);
@@ -106,7 +108,10 @@ public class SemanticErrorChecker extends TugaBaseVisitor<TugaTypes>
         }
 
         if (!left.isNumeric() || !right.isNumeric())
-            return error(ctx);
+        {
+            error(ctx);
+            return TugaTypes.ERROR;
+        }
 
         if (left == TugaTypes.DOUBLE || right == TugaTypes.DOUBLE)
         {
@@ -124,14 +129,11 @@ public class SemanticErrorChecker extends TugaBaseVisitor<TugaTypes>
         TugaTypes left = visit(ctx.expr(0));
         TugaTypes right = visit(ctx.expr(1));
 
-        if (left == TugaTypes.ERROR || right == TugaTypes.ERROR)
+        if (!left.isNumeric() || !right.isNumeric())
         {
-            types.put(ctx, TugaTypes.ERROR);
+            error(ctx);
             return TugaTypes.ERROR;
         }
-
-        if (!left.isNumeric() || !right.isNumeric())
-            return error(ctx);
 
         types.put(ctx, TugaTypes.BOOLEAN);
         return TugaTypes.BOOLEAN;
@@ -142,12 +144,6 @@ public class SemanticErrorChecker extends TugaBaseVisitor<TugaTypes>
     {
         TugaTypes left = visit(ctx.expr(0));
         TugaTypes right = visit(ctx.expr(1));
-
-        if (left == TugaTypes.ERROR || right == TugaTypes.ERROR)
-        {
-            types.put(ctx, TugaTypes.ERROR);
-            return TugaTypes.ERROR;
-        }
 
         if (left.isNumeric() && right.isNumeric())
         {
@@ -167,7 +163,8 @@ public class SemanticErrorChecker extends TugaBaseVisitor<TugaTypes>
             return TugaTypes.BOOLEAN;
         }
 
-        return error(ctx);
+        error(ctx);
+        return TugaTypes.ERROR;
     }
 
     @Override
@@ -176,14 +173,11 @@ public class SemanticErrorChecker extends TugaBaseVisitor<TugaTypes>
         TugaTypes left = visit(ctx.expr(0));
         TugaTypes right = visit(ctx.expr(1));
 
-        if (left == TugaTypes.ERROR || right == TugaTypes.ERROR)
+        if (left != TugaTypes.BOOLEAN || right != TugaTypes.BOOLEAN)
         {
-            types.put(ctx, TugaTypes.ERROR);
+            error(ctx);
             return TugaTypes.ERROR;
         }
-
-        if (left != TugaTypes.BOOLEAN || right != TugaTypes.BOOLEAN)
-            error(ctx);
 
         types.put(ctx, TugaTypes.BOOLEAN);
         return TugaTypes.BOOLEAN;
@@ -195,14 +189,11 @@ public class SemanticErrorChecker extends TugaBaseVisitor<TugaTypes>
         TugaTypes left = visit(ctx.expr(0));
         TugaTypes right = visit(ctx.expr(1));
 
-        if (left == TugaTypes.ERROR || right == TugaTypes.ERROR)
+        if (left != TugaTypes.BOOLEAN || right != TugaTypes.BOOLEAN)
         {
-            types.put(ctx, TugaTypes.ERROR);
+            error(ctx);
             return TugaTypes.ERROR;
         }
-
-        if (left != TugaTypes.BOOLEAN || right != TugaTypes.BOOLEAN)
-            error(ctx);
 
         types.put(ctx, TugaTypes.BOOLEAN);
         return TugaTypes.BOOLEAN;
@@ -243,7 +234,7 @@ public class SemanticErrorChecker extends TugaBaseVisitor<TugaTypes>
     public void addErrorListener(MyErrorListener listener)
     {
         if (listener != null)
-            listeners.add(listener);
+            this.listeners.add(listener);
         else
             throw new NullPointerException("Listener should not be null");
     }
@@ -254,18 +245,41 @@ public class SemanticErrorChecker extends TugaBaseVisitor<TugaTypes>
             this.listeners = new ArrayList<MyErrorListener>();
     }
 
-    private TugaTypes error(ParserRuleContext ctx)
+    private void error(ParserRuleContext ctx)
     {
-        if (!reportedErrors.contains(ctx))
-        {
-            reportedErrors.add(ctx);
-            int line = ctx.getStart().getLine();
-            int charPosition = ctx.getStart().getCharPositionInLine();
-            for (MyErrorListener listener : listeners)
-                listener.syntaxError(MyErrorListener.ErrorTypes.SEMANTIC, line, charPosition, getOriginalText(ctx));
-            //System.err.printf("Type error at line %d:%d - %s\n", line, charPosition, message);
+        types.put(ctx, TugaTypes.ERROR);
+        if (this.types.get(ctx) == TugaTypes.ERROR && ctx instanceof TugaParser.ExprContext && !doChildrenHaveErrors(ctx))
+            raiseError((TugaParser.ExprContext)ctx);
+    }
+
+    private void raiseError(TugaParser.ExprContext node) {
+        int line = 0;
+        int charPositionInLine = 0;
+        String msg = "";
+
+        if (node instanceof TugaParser.ExprContext) {
+            TugaParser.ExprContext ctx = (TugaParser.ExprContext) node;
+            line = ctx.getStart().getLine();
+            charPositionInLine = ctx.getStart().getCharPositionInLine();
+            msg = getOriginalText(ctx);
         }
-        return TugaTypes.ERROR;
+        else
+        {
+            throw new IllegalStateException("Should not get an error of anything that isn't a binary or unary operator.");
+        }
+
+        for (MyErrorListener listener : this.listeners)
+            listener.syntaxError(MyErrorListener.ErrorTypes.SEMANTIC, line, charPositionInLine, msg);
+    }
+
+    public boolean doChildrenHaveErrors(ParseTree ctx)
+    {
+        for (int i = 0; i < ctx.getChildCount(); i++) {
+            ParseTree child = ctx.getChild(i);
+            if (this.types.get(child) == TugaTypes.ERROR && child instanceof TugaParser.ExprContext)
+                return true;
+        }
+        return false;
     }
 
     private static String getOriginalText(ParserRuleContext ctx)
