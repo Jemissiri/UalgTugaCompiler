@@ -17,18 +17,28 @@ public class CodeGen extends TugaBaseVisitor<Void>
     private ArrayList<TugaValues> constantPool;
     private HashMap<TugaValues, Integer> constantPoolHash;
 
-    public CodeGen(ParseTreeProperty<TugaTypes> types)
+    private HashMap<String, TugaTypes> varTypes;
+    private HashMap<String, Integer> globalVariableHash;
+    // especifica quantos slots de memória consecutivos alocar
+    private int globalVariableChainCounter;
+
+    public CodeGen(ParseTreeProperty<TugaTypes> types, HashMap<String, TugaTypes> varTypes)
     {
         super();
         this.types = types;
         this.code = new ArrayList<Instruction>();
         this.constantPool = new ArrayList<TugaValues>();
         this.constantPoolHash = new HashMap<TugaValues, Integer>();
+
+        this.varTypes = varTypes;
+        this.globalVariableHash = new HashMap<String, Integer>();
+        this.globalVariableChainCounter = 0;
     }
 
-    public void emit(OpCode op, int... args)
+    public int emit(OpCode op, int... args)
     {
         code.add(new Instruction(op, args));
+        return code.size() - 1;
     }
 
     public int emitConst(TugaTypes type, Object value)
@@ -104,6 +114,39 @@ public class CodeGen extends TugaBaseVisitor<Void>
         }
     }
 
+    public void patch(int index, OpCode op, int ...args)
+    {
+        code.set(index, new Instruction(op, args));
+    }
+
+    @Override
+    public Void visitDeclVar(TugaParser.DeclVarContext ctx)
+    {
+        visit(ctx.variable());
+        emit(OpCode.galloc, globalVariableChainCounter);
+        // resetar o counter quando se aloca memoria
+        globalVariableChainCounter = 0;
+        return null;
+    }
+
+    @Override
+    public Void visitVars(TugaParser.VarsContext ctx)
+    {
+        globalVariableHash.put(ctx.VAR().getText(), globalVariableHash.size());
+        globalVariableChainCounter++;
+        visit(ctx.variable());
+        return null;
+    }
+
+    @Override
+    public Void visitVar(TugaParser.VarContext ctx)
+    {
+        globalVariableHash.put(ctx.VAR().getText(), globalVariableHash.size());
+        globalVariableChainCounter++;
+        return null;
+    }
+
+    @Override
     public Void visitInstPrint(TugaParser.InstPrintContext ctx)
     {
         visit(ctx.expr());
@@ -116,6 +159,70 @@ public class CodeGen extends TugaBaseVisitor<Void>
         else if (types.get(ctx.expr()) == TugaTypes.STRING)
             emit(OpCode.sprint);
 
+        return null;
+    }
+
+    @Override
+    public Void visitInstAssign(TugaParser.InstAssignContext ctx)
+    {
+        visit(ctx.expr());
+        TugaTypes varType = varTypes.get(ctx.VAR().getText());
+        TugaTypes exprType = types.get(ctx.expr());
+        if (varType == TugaTypes.DOUBLE && exprType == TugaTypes.INT)
+            emit(OpCode.itod);
+        emit(OpCode.gstore, globalVariableHash.get(ctx.VAR().getText()));
+
+        return null;
+    }
+
+    // Ao compilar uma instrucao if,
+    // o jumpf deve pular o bloco then se a condição for falsa.
+    // No momento do emit do jump (emit(OpCode.jumpf, -1)),
+    // ainda não sabemos onde o bloco then termina
+    // entao emitimos o salto com um valor de espaço reservado (-1)
+    // e posteriormente o corrigimos com o adereco correto com o patch.
+    @Override
+    public Void visitInstIf(TugaParser.InstIfContext ctx)
+    {
+        visit(ctx.expr());
+        int elseJumpIndex = emit(OpCode.jumpf, -1);
+        visit(ctx.scopeOrInst());
+        // posicao depois do bloco else
+        int end = code.size();
+
+        patch(elseJumpIndex, OpCode.jumpf, end);
+        return null;
+    }
+
+    @Override
+    public Void visitInstIfElse(TugaParser.InstIfElseContext ctx)
+    {
+        visit(ctx.expr());
+        int elseJumpIndex = emit(OpCode.jumpf, -1);
+        visit(ctx.scopeOrInst(0));
+        int elseSkipIndex = emit(OpCode.jump, -1);
+        // posicao no inicio do bloco else
+        int middle = code.size();
+        visit(ctx.scopeOrInst(1));
+        // posicao depois do bloco else
+        int end = code.size();
+
+        patch(elseJumpIndex, OpCode.jumpf, middle);
+        patch(elseSkipIndex, OpCode.jump, end);
+        return null;
+    }
+
+    @Override
+    public Void visitInstWhile(TugaParser.InstWhileContext ctx)
+    {
+        int start = code.size();
+        visit(ctx.expr());
+        int conditionJumpIndex = emit(OpCode.jumpf, -1);
+        visit(ctx.scopeOrInst());
+        emit(OpCode.jump, start);
+        int end = code.size();
+
+        patch(conditionJumpIndex, OpCode.jumpf, end);
         return null;
     }
 
@@ -143,7 +250,6 @@ public class CodeGen extends TugaBaseVisitor<Void>
 
         convertToDoubleIfNeeded(ctx.expr(0), ctx.expr(1));
         emit(op);
-
         return null;
     }
 
@@ -180,7 +286,6 @@ public class CodeGen extends TugaBaseVisitor<Void>
         if (op != OpCode.sconcat)
             convertToDoubleIfNeeded(ctx.expr(0), ctx.expr(1));
         emit(op);
-
         return null;
     }
 
@@ -228,7 +333,6 @@ public class CodeGen extends TugaBaseVisitor<Void>
         else
             convertToDoubleIfNeeded(ctx.expr(1), ctx.expr(0));
         emit(op);
-
         return null;
     }
 
@@ -270,7 +374,6 @@ public class CodeGen extends TugaBaseVisitor<Void>
 
         convertToDoubleIfNeeded(ctx.expr(0), ctx.expr(1));
         emit(op);
-
         return null;
     }
 
@@ -356,6 +459,13 @@ public class CodeGen extends TugaBaseVisitor<Void>
     public Void visitFalse(TugaParser.FalseContext ctx)
     {
         emit(OpCode.fconst);
+        return null;
+    }
+
+    @Override
+    public Void visitVarExpr(TugaParser.VarExprContext ctx)
+    {
+        emit(OpCode.gload, globalVariableHash.get(ctx.VAR().getText()));
         return null;
     }
 

@@ -3,6 +3,7 @@ import org.antlr.v4.runtime.tree.*;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.HashMap;
 
 import Tuga.*;
 import CodeGenerator.CodeGen;
@@ -27,13 +28,13 @@ public class TugaCompileAndRun
     {
         showLexerErrors = false;
         showParserErrors = false;
-        showTypeCheckingErrors = false;
+        showTypeCheckingErrors = true;
         showTrace = false;
         showAsm = false;
         dumps= true;
 
         String inputFile = null;
-        if ( args.length>0 )
+        if (args.length > 0)
         {
             inputFile = args[0];
             for (int i = 0; i < args.length; i++)
@@ -63,28 +64,30 @@ public class TugaCompileAndRun
             ParseTree tree = parser.tuga();
 
             ParseTreeProperty<TugaTypes> types = new ParseTreeProperty<TugaTypes>();
-            SemanticErrorChecker semanticErrorChecker = new SemanticErrorChecker(types);
+            HashMap<String, TugaTypes> varTypes = new HashMap<String, TugaTypes>();
+            SemanticErrorChecker semanticErrorChecker = new SemanticErrorChecker(types, varTypes);
             semanticErrorChecker.removeErrorListener();
             semanticErrorChecker.addErrorListener(errorListener);
             semanticErrorChecker.visit(tree);
 
             if (errorListener.getNumLexerErrors() > 0)
             {
-                System.out.println("Input has lexical errors");
+                //System.out.println("Input has lexical errors");
                 return;
             }
             if (errorListener.getNumParsingErrors() > 0)
             {
-                System.out.println("Input has parsing errors");
+                //System.out.println("Input has parsing errors");
                 return;
             }
             if (errorListener.getNumTypeCheckingErrors() > 0)
             {
-                System.out.println("Input has type checking errors");
+                //System.out.println("Input has type checking errors");
                 return;
             }
 
-            CodeGen codeGen = new CodeGen(types);
+
+            CodeGen codeGen = new CodeGen(types, varTypes);
             codeGen.visit(tree);
             if (showAsm)
                 codeGen.dumpCode();

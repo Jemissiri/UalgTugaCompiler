@@ -72,6 +72,9 @@ public class TugaValues
             case TugaTypes.ERROR:
                 result = "ERROR";
                 break;
+            case TugaTypes.NULL:
+                result = "NULL";
+                break;
             default:
                 result = "UNKNOWN";
                 break;

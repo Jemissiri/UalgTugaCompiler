@@ -15,6 +15,7 @@ public class VirtualMachine
     private Instruction[] code;        // instructions (converted from the bytecodes)
     private final Stack<TugaValues> stack;    // runtime stack
     private int ip;                    // instruction pointer
+    private final ArrayList<TugaValues> globalVariables;
 
 
     public VirtualMachine(byte [] bytecodes, boolean trace ) {
@@ -26,6 +27,7 @@ public class VirtualMachine
         this.code = en.getInstructions();
         this.stack = new Stack<TugaValues>();
         this.ip = 0;
+        this.globalVariables = new ArrayList<TugaValues>();
     }
 
     /*
@@ -77,10 +79,10 @@ public class VirtualMachine
 
     private void runtimeError(String msg)
     {
-        System.err.println("runtime error: " + msg);
+        System.out.println("erro de runtime: " + msg);
         if (trace)
-            System.err.println(String.format("%22s Stack: %s", "", stack));
-        System.exit(1);
+            System.out.println(String.format("%22s Stack: %s", "", stack));
+        System.exit(0);
     }
 
     // funcao para sempre verificar se o tipo e correto
@@ -465,6 +467,43 @@ public class VirtualMachine
         halt = true;
     }
 
+    private void exec_jump(int arg)
+    {
+        ip = arg;
+    }
+
+    private void exec_jumpf(int arg)
+    {
+        TugaValues value = stack.pop();
+        checkType(value, TugaTypes.BOOLEAN);
+        if (!value.getBooleanValue())
+            ip = arg;
+    }
+    
+    private void exec_galloc(int arg)
+    {
+        for (int i = 0; i < arg; i++)
+            globalVariables.add(new TugaValues(TugaTypes.NULL, null));
+    }
+
+    private void exec_gload(int arg)
+    {
+        if (arg > globalVariables.size() - 1 || arg < 0)
+            runtimeError("Invalid address");
+        TugaValues value = globalVariables.get(arg);
+        if (value.getType() == TugaTypes.NULL)
+            runtimeError("tentativa de acesso a valor NULO");
+        stack.push(value);
+    }
+
+    private void exec_gstore(int arg)
+    {
+        if (arg > globalVariables.size() - 1 || arg < 0)
+            runtimeError("Invalid address");
+        TugaValues value = stack.pop();
+        globalVariables.set(arg, value);
+    }
+
     public void exec_inst(Instruction inst)
     {
         if (trace)
@@ -598,6 +637,26 @@ public class VirtualMachine
                 break;
             case halt:
                 exec_halt();
+                break;
+            case jump:
+                v = inst.args()[0];
+                exec_jump(v);
+                break;
+            case jumpf:
+                v = inst.args()[0];
+                exec_jumpf(v);
+                break;
+            case galloc:
+                v = inst.args()[0];
+                exec_galloc(v);
+                break;
+            case gload:
+                v = inst.args()[0];
+                exec_gload(v);
+                break;
+            case gstore:
+                v = inst.args()[0];
+                exec_gstore(v);
                 break;
             default:
                 System.out.println("This should never happen! In file vm.java, method exec_inst()");

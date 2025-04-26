@@ -10,31 +10,68 @@ variable : VAR ',' variable                         # Vars
   ;
 
 // instructions
-inst : 'escreve' expr END_INST                                     # instPrint
-  | VAR '<-' expr                                                  # instAssign
-  | 'inicio' inst* 'fim'                                           # instScope
-  | 'se' LPAREN expr RPAREN (inst | 'inicio' inst* 'fim')          # instIf
+inst : print
+  | assign
+  | scope
+  | if
+  | ifelse
+  | while
+  | empty
+  ;
+
+/*
+inst : 'escreve' expr END_INST                                     # InstPrint
+  | VAR '<-' expr                                                  # InstAssign
+  | 'inicio' inst* 'fim'                                           # InstScope
+  | 'se' LPAREN expr RPAREN (inst | 'inicio' inst* 'fim')          # InstIf
   | 'se' LPAREN expr RPAREN (inst | 'inicio' inst* 'fim')
-    'senao' (inst | 'inicio' inst* 'fim')                          # instIfElse
-  | 'enquanto' LPAREN expr RPAREN (inst | 'inicio' inst* 'fim')    # instWhile
-  | END_INST                                                       # instEmpty
+    'senao' (inst | 'inicio' inst* 'fim')                          # InstIfElse
+  | 'enquanto' LPAREN expr RPAREN (inst | 'inicio' inst* 'fim')    # InstWhile
+  | END_INST                                                       # InstEmpty
+  ;
+*/
+
+print : 'escreve' expr END_INST                                    # InstPrint
+  ;
+
+assign : VAR '<-' expr                                             # InstAssign
+  ;
+
+scope : 'inicio' inst* 'fim'                                       # InstScope
+  ;
+
+scopeOrInst : scope
+  | inst
+  ;
+
+if : 'se' '(' expr ')' scopeOrInst                                 # InstIf
+  ;
+
+ifelse : 'se' '(' expr ')' scopeOrInst
+         'senao' scopeOrInst							           # InstIfElse
+  ;
+
+while : 'enquanto' '(' expr ')' scopeOrInst                        # InstWhile
+  ;
+
+empty : END_INST                                                   # InstEmpty
   ;
 
 // expressions
 expr : LPAREN expr RPAREN							# ParenExpr
   // unary operators
-  | SUB expr 									    # NegateOp
-  | NOT expr 									    # LogicNegateOp
+  | op=SUB expr 								    # NegateOp
+  | op=NOT expr 								    # LogicNegateOp
   // binary operators
   | expr op=(MULT|DIV|MOD) expr	 					# MultDivModOp
   | expr op=(SUM|SUB) expr	 						# SumSubOp
   | expr op=(LESS|GREATER|LESS_EQ|GREATER_EQ) expr	# RelOp
   | expr op=(EQUALS|N_EQUALS) expr	 				# EqualsOp
-  | expr AND expr       	 						# AndOp
-  | expr OR expr                                    # OrOp
+  | expr op=AND expr       	 						# AndOp
+  | expr op=OR expr                                 # OrOp
   // literals
   | literal											# LiteralExpr
-  | VAR                                             # VARExpr
+  | VAR                                             # VarExpr
   ;
 
 literal : INT										# Int

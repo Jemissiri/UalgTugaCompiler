@@ -57,17 +57,20 @@ public class MyErrorListener extends BaseErrorListener {
             case ErrorTypes.LEXER:
                 this.numLexerErrors++;
                 if (this.showLexerErrors)
-                    System.err.printf("line %d:%d \nerror: %s\n\n", line, charPositionInLine, msg);
+                    System.out.println("erro na linha " + line + ": " + msg);
+                    //System.err.printf("line %d:%d \nerror: %s\n\n", line, charPositionInLine, msg);
                 break;
             case ErrorTypes.PARSER:
                 this.numParsingErrors++;
                 if (this.showParserErrors)
-                    System.err.printf("line %d:%d \nerror: %s\n\n", line, charPositionInLine, msg);
+                    System.out.println("erro na linha " + line + ": " + msg);
+                    //System.err.printf("line %d:%d \nerror: %s\n\n", line, charPositionInLine, msg);
                 break;
             case ErrorTypes.SEMANTIC:
                 this.getNumTypeCheckingErrors++;
                 if (this.showSemanticErrors)
-                    System.err.printf("line %d:%d \nerror: %s\n\n", line, charPositionInLine, msg);
+                    System.out.println("erro na linha " + line + ": " + msg);
+                    //System.err.printf("line %d:%d \nerror: %s\n\n", line, charPositionInLine, msg);
                 break;
             default:
                 throw new IllegalStateException("Syntax error cannot be of type UNKNOWN");
