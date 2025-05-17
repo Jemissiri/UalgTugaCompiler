@@ -38,6 +38,55 @@ public interface TugaVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitVar(TugaParser.VarContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code FunctionDecl}
+	 * labeled alternative in {@link TugaParser#function}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFunctionDecl(TugaParser.FunctionDeclContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code Args}
+	 * labeled alternative in {@link TugaParser#arg_list}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArgs(TugaParser.ArgsContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code Arg}
+	 * labeled alternative in {@link TugaParser#arg_list}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArg(TugaParser.ArgContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code DeclArg}
+	 * labeled alternative in {@link TugaParser#argument}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDeclArg(TugaParser.DeclArgContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code FunctionCall}
+	 * labeled alternative in {@link TugaParser#function_call}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFunctionCall(TugaParser.FunctionCallContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code Expressions}
+	 * labeled alternative in {@link TugaParser#expr_list}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExpressions(TugaParser.ExpressionsContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code Expression}
+	 * labeled alternative in {@link TugaParser#expr_list}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExpression(TugaParser.ExpressionContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link TugaParser#inst}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -91,6 +140,20 @@ public interface TugaVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitInstWhile(TugaParser.InstWhileContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code InstFunctionCall}
+	 * labeled alternative in {@link TugaParser#function_call_inst}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInstFunctionCall(TugaParser.InstFunctionCallContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code InstReturn}
+	 * labeled alternative in {@link TugaParser#return}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInstReturn(TugaParser.InstReturnContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code InstEmpty}
 	 * labeled alternative in {@link TugaParser#empty}.
@@ -161,6 +224,13 @@ public interface TugaVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitParenExpr(TugaParser.ParenExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code FuncExpr}
+	 * labeled alternative in {@link TugaParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFuncExpr(TugaParser.FuncExprContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code MultDivModOp}
 	 * labeled alternative in {@link TugaParser#expr}.

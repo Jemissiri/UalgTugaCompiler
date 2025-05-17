@@ -42,7 +42,7 @@ public class EnconderDecoder
         }
         catch (IOException e)
         {
-            System.err.println("Error on decoding bytecodes:\n" + e.getMessage());
+            System.out.println("Error on decoding bytecodes:\n" + e.getMessage());
         }
     }
 
@@ -97,7 +97,7 @@ public class EnconderDecoder
         }
         catch (IOException e)
         {
-            System.err.println("Error on decoding bytecodes:\n" + e.getMessage());
+            System.out.println("Error on decoding bytecodes:\n" + e.getMessage());
         }
         return bytes;
     }

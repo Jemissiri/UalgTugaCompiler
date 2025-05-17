@@ -17,6 +17,9 @@ public class VirtualMachine
     private int ip;                    // instruction pointer
     private final ArrayList<TugaValues> globalVariables;
 
+    private final HashMap<Integer, Integer> lallocMemory; // key-numero da frame ; value-numero de lallocs
+    private int frameCount;
+    private int fp;                    // frame pointer
 
     public VirtualMachine(byte [] bytecodes, boolean trace ) {
         this.trace = trace;
@@ -28,6 +31,8 @@ public class VirtualMachine
         this.stack = new Stack<TugaValues>();
         this.ip = 0;
         this.globalVariables = new ArrayList<TugaValues>();
+
+        this.lallocMemory = new HashMap<Integer, Integer>();
     }
 
     /*
@@ -504,6 +509,94 @@ public class VirtualMachine
         globalVariables.set(arg, value);
     }
 
+    private void exec_lalloc(int arg)
+    {
+        for (int i = 0; i < arg; i++)
+            stack.push(new TugaValues(TugaTypes.NULL, null));
+
+        int oldMemoryValue = 0;
+        if (lallocMemory.containsKey(frameCount))
+            oldMemoryValue = lallocMemory.get(frameCount);
+        lallocMemory.put(frameCount, oldMemoryValue + arg);
+    }
+
+    private void exec_lload(int arg)
+    {
+        stack.push(this.stack.get(fp + arg));
+    }
+
+    private void exec_lstore(int arg)
+    {
+        TugaValues value = stack.pop();
+        stack.set(fp + arg, value);
+    }
+
+    private void exec_pop(int arg)
+    {
+        for (int i = 0; i < arg; i++)
+            stack.pop();
+
+        if (lallocMemory.containsKey(frameCount))
+        {
+            int oldMemoryValue = lallocMemory.get(frameCount);
+            lallocMemory.put(frameCount, oldMemoryValue - arg);
+        }
+    }
+
+    private void exec_call(int arg)
+    {
+        stack.push(new TugaValues(TugaTypes.INT, fp));
+        fp = this.stack.size() - 1;
+        stack.push(new TugaValues(TugaTypes.INT, ip));
+        ip = arg;
+        frameCount++;
+    }
+
+    private void exec_retval(int arg)
+    {
+        TugaValues returnValue = stack.pop();
+
+        int lallocs = 0;
+        if (lallocMemory.containsKey(frameCount))
+            lallocs = lallocMemory.get(frameCount);
+        lallocMemory.remove(frameCount);
+
+        // pop nas local variables
+        for (int i = 0; i < lallocs; i++)
+            stack.pop();
+
+        ip = stack.pop().getIntValue();
+        fp = stack.pop().getIntValue();
+
+        // pop dos argumentos
+        for (int i = 0; i < arg; i++)
+            stack.pop();
+
+        frameCount--;
+
+        stack.push(returnValue);
+    }
+
+    private void exec_ret(int arg)
+    {
+        int lallocs = 0;
+        if (lallocMemory.containsKey(frameCount))
+            lallocs = lallocMemory.get(frameCount);
+        lallocMemory.remove(frameCount);
+
+        // pop nas local variables
+        for (int i = 0; i < lallocs; i++)
+            stack.pop();
+
+        ip = stack.pop().getIntValue();
+        fp = stack.pop().getIntValue();
+
+        // pop dos argumentos
+        for (int i = 0; i < arg; i++)
+            stack.pop();
+        frameCount--;
+    }
+
     public void exec_inst(Instruction inst)
     {
         if (trace)
@@ -657,6 +750,34 @@ public class VirtualMachine
             case gstore:
                 v = inst.args()[0];
                 exec_gstore(v);
+                break;
+            case lalloc:
+                v = inst.args()[0];
+                exec_lalloc(v);
+                break;
+            case lload:
+                v = inst.args()[0];
+                exec_lload(v);
+                break;
+            case lstore:
+                v = inst.args()[0];
+                exec_lstore(v);
+                break;
+            case pop:
+                v = inst.args()[0];
+                exec_pop(v);
+                break;
+            case call:
+                v = inst.args()[0];
+                exec_call(v);
+                break;
+            case retval:
+                v = inst.args()[0];
+                exec_retval(v);
+                break;
+            case ret:
+                v = inst.args()[0];
+                exec_ret(v);
                 break;
             default:
                 System.out.println("This should never happen! In file vm.java, method exec_inst()");

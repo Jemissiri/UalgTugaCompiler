@@ -1,12 +1,31 @@
 grammar Tuga;
 
-tuga : declare_var* inst+ EOF;
+// tuga : declare_var* inst+ EOF;
+tuga : declare_var* function+ EOF;
 
 declare_var : variable ':' type=(INT_TYPE | DOUBLE_TYPE | STRING_TYPE | BOOLEAN_TYPE) END_INST     # DeclVar
   ;
 
 variable : VAR ',' variable                         # Vars
   | VAR                                             # Var
+  ;
+
+function : 'funcao' VAR '(' arg_list? ')'
+           (':' type=(INT_TYPE | DOUBLE_TYPE | STRING_TYPE | BOOLEAN_TYPE))? scope      # FunctionDecl
+  ;
+
+arg_list : argument ',' arg_list                         # Args
+  | argument                                             # Arg
+  ;
+
+argument : VAR ':' type=(INT_TYPE | DOUBLE_TYPE | STRING_TYPE | BOOLEAN_TYPE)           # DeclArg
+  ;
+
+function_call : VAR '(' expr_list? ')'                                                  # FunctionCall
+  ;
+
+expr_list : expr ',' expr_list                          # Expressions
+  | expr                                                # Expression
   ;
 
 // instructions
@@ -16,6 +35,8 @@ inst : print
   | if
   | ifelse
   | while
+  | function_call_inst
+  | return
   | empty
   ;
 
@@ -34,10 +55,10 @@ inst : 'escreve' expr END_INST                                     # InstPrint
 print : 'escreve' expr END_INST                                    # InstPrint
   ;
 
-assign : VAR '<-' expr                                             # InstAssign
+assign : VAR '<-' expr END_INST                                    # InstAssign
   ;
 
-scope : 'inicio' inst* 'fim'                                       # InstScope
+scope : 'inicio' declare_var* inst* 'fim'                                       # InstScope
   ;
 
 scopeOrInst : scope
@@ -52,6 +73,12 @@ ifelse : 'se' '(' expr ')' scopeOrInst
   ;
 
 while : 'enquanto' '(' expr ')' scopeOrInst                        # InstWhile
+  ;
+
+function_call_inst : function_call END_INST                        # InstFunctionCall
+  ;
+
+return : 'retorna' expr? END_INST                                  # InstReturn
   ;
 
 empty : END_INST                                                   # InstEmpty
@@ -72,6 +99,7 @@ expr : LPAREN expr RPAREN							# ParenExpr
   // literals
   | literal											# LiteralExpr
   | VAR                                             # VarExpr
+  | function_call                                   # FuncExpr
   ;
 
 literal : INT										# Int

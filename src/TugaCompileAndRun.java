@@ -7,9 +7,10 @@ import java.util.HashMap;
 
 import Tuga.*;
 import CodeGenerator.CodeGen;
-import MyErrorListeners.MyErrorListener;
-import SemanticErrorChecker.SemanticErrorChecker;
-import Types.TugaTypes;
+import MyErrorListeners.*;
+import SemanticErrorChecker.*;
+import Types.*;
+import Types.Symbols.*;
 import Bytecode.*;
 import VM.*;
 
@@ -63,31 +64,33 @@ public class TugaCompileAndRun
             parser.addErrorListener( errorListener );
             ParseTree tree = parser.tuga();
 
+            HashMap<String, FunctionSymbol> functions = new HashMap<String, FunctionSymbol>();
+            new SymbolTableBuilder(functions).visit(tree);
             ParseTreeProperty<TugaTypes> types = new ParseTreeProperty<TugaTypes>();
             HashMap<String, TugaTypes> varTypes = new HashMap<String, TugaTypes>();
-            SemanticErrorChecker semanticErrorChecker = new SemanticErrorChecker(types, varTypes);
+            SemanticErrorChecker semanticErrorChecker = new SemanticErrorChecker(types, varTypes, functions);
             semanticErrorChecker.removeErrorListener();
             semanticErrorChecker.addErrorListener(errorListener);
             semanticErrorChecker.visit(tree);
 
+            errorListener.print();
             if (errorListener.getNumLexerErrors() > 0)
             {
-                //System.out.println("Input has lexical errors");
+                System.out.println("Input has lexical errors");
                 return;
             }
             if (errorListener.getNumParsingErrors() > 0)
             {
-                //System.out.println("Input has parsing errors");
+                System.out.println("Input has parsing errors");
                 return;
             }
-            if (errorListener.getNumTypeCheckingErrors() > 0)
+            if (errorListener.numTypeCheckingErrors() > 0)
             {
                 //System.out.println("Input has type checking errors");
                 return;
             }
 
-
-            CodeGen codeGen = new CodeGen(types, varTypes);
+            CodeGen codeGen = new CodeGen(types, varTypes, functions);
             codeGen.visit(tree);
             if (showAsm)
                 codeGen.dumpCode();
@@ -104,6 +107,7 @@ public class TugaCompileAndRun
                 System.out.println("*** VM output ***");
             }
             vm.run();
+
         }
         catch (java.io.IOException e)
         {

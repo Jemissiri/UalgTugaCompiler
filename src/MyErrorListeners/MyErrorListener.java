@@ -1,6 +1,7 @@
 package MyErrorListeners;
 
 import org.antlr.v4.runtime.*;
+import java.util.*;
 
 public class MyErrorListener extends BaseErrorListener {
     private boolean showLexerErrors;
@@ -8,7 +9,9 @@ public class MyErrorListener extends BaseErrorListener {
     private boolean showSemanticErrors;
     private int numLexerErrors;
     private int numParsingErrors;
-    private int getNumTypeCheckingErrors;
+    private int numTypeCheckingErrors;
+    private PriorityQueue<Integer> lines; // linhas onde tem erros
+    private HashMap<Integer, ArrayList<String>> errors; // hashmap conectando as linhas com as mensagens
 
     public enum ErrorTypes
     {
@@ -25,7 +28,9 @@ public class MyErrorListener extends BaseErrorListener {
         this.showSemanticErrors = showSemanticErrors;
         this.numLexerErrors = 0;
         this.numParsingErrors = 0;
-        this.getNumTypeCheckingErrors = 0;
+        this.numTypeCheckingErrors = 0;
+        this.lines = new PriorityQueue<Integer>();
+        this.errors = new HashMap<Integer, ArrayList<String>>();
     }
 
     @Override
@@ -57,23 +62,50 @@ public class MyErrorListener extends BaseErrorListener {
             case ErrorTypes.LEXER:
                 this.numLexerErrors++;
                 if (this.showLexerErrors)
-                    System.out.println("erro na linha " + line + ": " + msg);
-                    //System.err.printf("line %d:%d \nerror: %s\n\n", line, charPositionInLine, msg);
+                    addError(line, "erro na linha " + line + ": " + msg);
+                    // System.out.println("erro na linha " + line + ": " + msg);
+                    // System.err.printf("line %d:%d \nerror: %s\n\n", line, charPositionInLine, msg);
                 break;
             case ErrorTypes.PARSER:
                 this.numParsingErrors++;
                 if (this.showParserErrors)
-                    System.out.println("erro na linha " + line + ": " + msg);
-                    //System.err.printf("line %d:%d \nerror: %s\n\n", line, charPositionInLine, msg);
+                    addError(line, "erro na linha " + line + ": " + msg);
+                    // System.out.println("erro na linha " + line + ": " + msg);
+                    // System.err.printf("line %d:%d \nerror: %s\n\n", line, charPositionInLine, msg);
                 break;
             case ErrorTypes.SEMANTIC:
-                this.getNumTypeCheckingErrors++;
+                this.numTypeCheckingErrors++;
                 if (this.showSemanticErrors)
-                    System.out.println("erro na linha " + line + ": " + msg);
-                    //System.err.printf("line %d:%d \nerror: %s\n\n", line, charPositionInLine, msg);
+                    addError(line, "erro na linha " + line + ": " + msg);
+                    // System.out.println("erro na linha " + line + ": " + msg);
+                    // System.err.printf("line %d:%d \nerror: %s\n\n", line, charPositionInLine, msg);
                 break;
             default:
                 throw new IllegalStateException("Syntax error cannot be of type UNKNOWN");
+        }
+    }
+
+    private void addError(int line, String msg)
+    {
+        this.lines.add(line);
+        if (this.errors.get(line) == null)
+            this.errors.put(line, new ArrayList<String>());
+
+        ArrayList<String> lineErrors = this.errors.get(line);
+        lineErrors.add(msg);
+    }
+
+    public void print()
+    {
+        while (lines.size() > 0)
+        {
+            int line = this.lines.remove();
+            // remover linhas duplicatas consecutivas do mesmo numero de linha na fila
+            while (this.lines.peek() != null && this.lines.peek() == line)
+                this.lines.remove();
+            ArrayList<String> lineErrors = this.errors.get(line);
+            for (String error : lineErrors)
+                System.out.println(error);
         }
     }
 
@@ -81,6 +113,6 @@ public class MyErrorListener extends BaseErrorListener {
 
     public int getNumParsingErrors() { return this.numParsingErrors; }
 
-    public int getNumTypeCheckingErrors() { return this.getNumTypeCheckingErrors; }
+    public int numTypeCheckingErrors() { return this.numTypeCheckingErrors; }
 }
 

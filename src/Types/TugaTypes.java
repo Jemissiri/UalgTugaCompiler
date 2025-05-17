@@ -43,6 +43,14 @@ public enum TugaTypes
         public boolean isNumeric() { return false; }
         @Override
         public String toString() { return "nulo"; }
+    },
+    VOID()
+    {
+        @Override
+        public boolean isNumeric() { return false; }
+
+        @Override
+        public String toString() { return "vazio"; }
     };
 
     public abstract boolean isNumeric();
